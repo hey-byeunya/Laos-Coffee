@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Product } from "@/types/product";
 import { formatWon } from "@/lib/format";
 import { ProductImagePlaceholder } from "./ProductImagePlaceholder";
@@ -25,7 +26,10 @@ export function ProductCard({ product }: ProductCardProps) {
   } = product;
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white transition-shadow hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
+    <Link
+      href={`/products/${id}`}
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white transition-shadow hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-950"
+    >
       <div className="relative aspect-square w-full overflow-hidden">
         <ProductImagePlaceholder
           seed={id}
@@ -78,6 +82,6 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <p className="mt-auto pt-2 text-xs text-zinc-500">{delivery}</p>
       </div>
-    </article>
+    </Link>
   );
 }
