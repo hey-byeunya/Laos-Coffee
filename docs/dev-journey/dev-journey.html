@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>커피 쇼핑몰 개발 여정</title>
+<style>
+  :root {
+    --ink: #241811;
+    --paper: #ECE0C6;
+    --paper-raised: #F8F1DE;
+    --paper-raised-2: #FFFBF2;
+    --coffee: #5C3A22;
+    --amber: #A9691E;
+    --amber-ink: #7A4B15;
+    --sage: #49643F;
+    --sage-ink: #3C5433;
+    --line: rgba(36, 24, 17, 0.22);
+    --shadow: rgba(52, 33, 15, 0.16);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #F1E7D2;
+      --paper: #191410;
+      --paper-raised: #241D16;
+      --paper-raised-2: #2C241A;
+      --coffee: #E7C495;
+      --amber: #E7A03F;
+      --amber-ink: #F0B563;
+      --sage: #8FB07E;
+      --sage-ink: #A3C293;
+      --line: rgba(241, 231, 210, 0.18);
+      --shadow: rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo",
+      "Malgun Gothic", -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    padding: clamp(20px, 5vw, 64px) 0 80px;
+  }
+
+  .mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas,
+      monospace;
+  }
+
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ---------- Header ---------- */
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--sage-ink);
+    font-weight: 600;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 18px;
+    height: 1px;
+    background: var(--sage-ink);
+    display: inline-block;
+  }
+
+  h1.title {
+    font-size: clamp(1.7rem, 4.2vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 14px 0 16px;
+    color: var(--coffee);
+  }
+
+  .lede {
+    font-size: 1.02rem;
+    max-width: 62ch;
+    color: var(--ink);
+    opacity: 0.86;
+  }
+
+  .lede strong {
+    color: var(--amber-ink);
+    font-weight: 700;
+  }
+
+  .fact-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  .fact {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 0.82rem;
+  }
+  .fact b {
+    font-size: 1rem;
+    color: var(--amber-ink);
+  }
+
+  /* ---------- Route overview strip ---------- */
+
+  .overview {
+    margin-top: 40px;
+    padding: 20px 18px 8px;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .overview-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--sage-ink);
+    margin-bottom: 14px;
+  }
+  .overview-strip {
+    display: flex;
+    overflow-x: auto;
+    gap: 0;
+    padding-bottom: 14px;
+    scrollbar-width: thin;
+  }
+  .overview-stop {
+    flex: 0 0 auto;
+    width: 84px;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    padding-top: 4px;
+  }
+  .overview-stop:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background-image: linear-gradient(
+      to right,
+      var(--line) 0,
+      var(--line) 5px,
+      transparent 5px,
+      transparent 10px
+    );
+    background-size: 10px 2px;
+  }
+  .overview-dot {
+    width: 32px;
+    height: 32px;
+    margin: 0 auto 8px;
+    border-radius: 50%;
+    background: var(--paper-raised-2);
+    border: 1.5px solid var(--amber);
+    color: var(--amber-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+  }
+  .overview-label-text {
+    font-size: 0.68rem;
+    color: var(--ink);
+    opacity: 0.75;
+    line-height: 1.3;
+  }
+  .overview-stop:hover .overview-dot {
+    background: var(--amber);
+    color: var(--paper-raised-2);
+  }
+
+  /* ---------- Trail ---------- */
+
+  .trail {
+    position: relative;
+    margin-top: 44px;
+  }
+  .trail::before {
+    content: "";
+    position: absolute;
+    left: 27px;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background-image: linear-gradient(
+      to bottom,
+      var(--line) 0,
+      var(--line) 6px,
+      transparent 6px,
+      transparent 13px
+    );
+    background-size: 2px 13px;
+  }
+
+  .stop {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 18px;
+    position: relative;
+    margin-bottom: 34px;
+    scroll-margin-top: 20px;
+  }
+  .stop:last-child { margin-bottom: 0; }
+
+  .stamp {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--paper-raised-2);
+    border: 2px solid var(--amber);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 2px 6px var(--shadow);
+  }
+  .stamp svg {
+    width: 26px;
+    height: 26px;
+    stroke: var(--amber-ink);
+    fill: none;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .stamp .num {
+    position: absolute;
+    bottom: -8px;
+    right: -6px;
+    background: var(--sage);
+    color: var(--paper-raised-2);
+    font-size: 0.68rem;
+    font-weight: 700;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stop-card {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px 20px;
+  }
+
+  .stop-title {
+    font-size: 1.12rem;
+    font-weight: 800;
+    color: var(--coffee);
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
+
+  .stop-block {
+    font-size: 0.94rem;
+    margin: 0 0 8px;
+  }
+  .stop-block .k {
+    font-weight: 700;
+    color: var(--sage-ink);
+    margin-right: 4px;
+  }
+
+  .stop-why {
+    font-size: 0.9rem;
+    opacity: 0.85;
+    padding: 10px 12px;
+    background: var(--paper-raised-2);
+    border-left: 3px solid var(--sage);
+    border-radius: 4px;
+    margin: 10px 0 12px;
+  }
+  .stop-why .k {
+    color: var(--amber-ink);
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas,
+      monospace;
+    font-size: 0.72rem;
+    background: var(--paper-raised-2);
+    border: 1px solid var(--line);
+    color: var(--amber-ink);
+    padding: 3px 8px;
+    border-radius: 5px;
+  }
+
+  /* ---------- Destination ---------- */
+
+  .destination {
+    margin-top: 44px;
+    background: linear-gradient(
+      165deg,
+      var(--paper-raised) 0%,
+      var(--paper-raised-2) 100%
+    );
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 28px 24px;
+    text-align: center;
+  }
+  .destination svg {
+    width: 34px;
+    height: 34px;
+    stroke: var(--sage-ink);
+    fill: none;
+    stroke-width: 1.6;
+    margin-bottom: 10px;
+  }
+  .destination h2 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--coffee);
+    margin: 0 0 8px;
+  }
+  .destination p {
+    font-size: 0.92rem;
+    opacity: 0.85;
+    max-width: 46ch;
+    margin: 0 auto 20px;
+  }
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 2px;
+  }
+  .btn-primary {
+    background: var(--amber);
+    color: #fffaf0;
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+
+  /* ---------- Next journey ---------- */
+
+  .next-up {
+    margin-top: 30px;
+    text-align: center;
+  }
+  .next-up-label {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--sage-ink);
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+  .next-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  .next-chip {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px dashed var(--line);
+    opacity: 0.75;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn { transition: none; }
+  }
+
+  @media (max-width: 480px) {
+    .stop { grid-template-columns: 44px 1fr; gap: 12px; }
+    .stamp { width: 44px; height: 44px; }
+    .stamp svg { width: 20px; height: 20px; }
+    .trail::before { left: 21px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <span class="eyebrow">실제로 있었던 개발 기록</span>
+    <h1 class="title">커피 쇼핑몰 하나가<br />완성되기까지, 10개의 정거장</h1>
+    <p class="lede">
+      코드를 한 줄도 몰라도 괜찮아요. 이 페이지는 <strong>라오스 유기농 커피
+      쇼핑몰(Lao Aroma)</strong>을 실제로 만들면서 거쳐온 과정을 순서 그대로
+      기록한 거예요. 각 단계마다 "실제로 무엇을 했는지"와 "일상 속 무엇과
+      비슷한지" 비유를 같이 적었어요.
+    </p>
+
+    <div class="fact-row">
+      <span class="fact"><b>10</b>&nbsp;단계</span>
+      <span class="fact"><b>8</b>&nbsp;개 상품 화면</span>
+      <span class="fact"><b>1</b>&nbsp;개의 실제 배포된 사이트</span>
+    </div>
+
+    <div class="overview">
+      <div class="overview-label">한눈에 보는 전체 여정</div>
+      <div class="overview-strip">
+        <a class="overview-stop" href="#stop-1"><span class="overview-dot">01</span><span class="overview-label-text">설계도<br />확인</span></a>
+        <a class="overview-stop" href="#stop-2"><span class="overview-dot">02</span><span class="overview-label-text">창고<br />마련</span></a>
+        <a class="overview-stop" href="#stop-3"><span class="overview-dot">03</span><span class="overview-label-text">뼈대<br />세우기</span></a>
+        <a class="overview-stop" href="#stop-4"><span class="overview-dot">04</span><span class="overview-label-text">가짜 상품<br />준비</span></a>
+        <a class="overview-stop" href="#stop-5"><span class="overview-dot">05</span><span class="overview-label-text">진열대<br />완성</span></a>
+        <a class="overview-stop" href="#stop-6"><span class="overview-dot">06</span><span class="overview-label-text">설명서<br />완성</span></a>
+        <a class="overview-stop" href="#stop-7"><span class="overview-dot">07</span><span class="overview-label-text">카트<br />완성</span></a>
+        <a class="overview-stop" href="#stop-8"><span class="overview-dot">08</span><span class="overview-label-text">손님<br />눈높이</span></a>
+        <a class="overview-stop" href="#stop-9"><span class="overview-dot">09</span><span class="overview-label-text">기록<br />저장</span></a>
+        <a class="overview-stop" href="#stop-10"><span class="overview-dot">10</span><span class="overview-label-text">가게 문<br />열기</span></a>
+      </div>
+    </div>
+
+    <div class="trail">
+
+      <div class="stop" id="stop-1">
+        <div class="stamp">
+          <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="13" y2="16"></line></svg>
+          <span class="num">1</span>
+        </div>
+        <div class="stop-card">
+          <h3 class="stop-title">설계도(PRD) 확인하기</h3>
+          <p class="stop-block"><span class="k">한 일 —</span>어떤 쇼핑몰을 만들지 정리해둔 "PRD"라는 기획 문서를 먼저 읽었어요. 누구에게 팔지, 어떤 화면이 필요한지, 상품 정보는 뭘 보여줄지가 다 적혀 있었어요.</p>
+          <p class="stop-why"><span class="k">비유 —</span> 집을 짓기 전에 설계도부터 펼쳐보는 것과 같아요. 설계도 없이 벽부터 쌓으면 나중에 다 부수고 다시 지어야 하거든요.</p>
+          <div class="chips"><span class="chip">PRD 문서</span><span class="chip">기획</span></div>
+        </div>
+      </div>
+
+      <div class="stop" id="stop-2">
+        <div class="stamp">
+          <svg viewBox="0 0 24 24"><polygon points="12,3 20,7.5 20,16.5 12,21 4,16.5 4,7.5"></polygon><line x1="4" y1="7.5" x2="12" y2="12"></line><line x1="20" y1="7.5" x2="12" y2="12"></line><line x1="12" y1="12" x2="12" y2="21"></line></svg>
+          <span class="num">2</span>
+        </div>
+        <div class="stop-card">
+          <h3 class="stop-title">빈 창고 열기 (저장소 클론)</h3>
+          <p class="stop-block"><span class="k">한 일 —</span>GitHub이라는 곳에 미리 만들어둔 빈 저장소를 내 컴퓨터로 그대로 복사해왔어요. 아직 안에는 아무것도 없는 빈 창고 같은 상태였어요.</p>
+          <p class="stop-why"><span class="k">비유 —</span> 물건을 만들기 전에 물건을 보관할 창고 열쇠부터 받아오는 것과 비슷해요.</p>
+          <div class="chips"><span class="chip">Git</span><span class="chip">GitHub</span><span class="chip">clone</span></div>
+        </div>
+      </div>
+
+      <div class="stop" id="stop-3">
+        <div class="stamp">
+          <svg viewBox="0 0 24 24"><line x1="5" y1="21" x2="5" y2="5"></line><line x1="19" y1="21" x2="19" y2="5"></line><line x1="5" y1="9" x2="19" y2="9"></line><line x1="5" y1="15" x2="19" y2="15"></line><line x1="5" y1="5" x2="19" y2="5"></line></svg>
+          <span class="num">3</span>
+        </div>
+        <div class="stop-card">
+          <h3 class="stop-title">뼈대 세우기 (프로젝트 생성)</h3>
+          <p class="stop-block"><span class="k">한 일 —</span>"Next.js"라는 도구로 웹사이트의 기본 뼈대를 만들었어요. 화면을 그리는 방식, 디자인 도구, 글자·숫자를 미리 확인하는 도구까지 기본 골조를 한 번에 세팅했어요.</p>
+          <p class="stop-why"><span class="k">비유 —</span> 건물을 지을 때 기둥과 골조부터 세우는 것과 같아요. 골조가 튼튼해야 그 위에 벽과 지붕을 올릴 수 있어요.</p>
+          <div class="chips"><span class="chip">Next.js</span><span class="chip">TypeScript</span><span class="chip">Tailwind CSS</span></div>
+        </div>
+      </div>
+
+      <div class="stop" id="stop-4">
+        <div class="stamp">
+          <svg viewBox="0 0 24 24"><path d="M6 3h9l3 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><line x1="8" y1="11" x2="15" y2="11"></line><line x1="8" y1="15" x2="13" y2="15"></line></svg>
+          <span class="num">4</span>
+        </div>
+        <div class="stop-card">
+          <h3 class="stop-title">가짜 상품 준비하기 (목업 데이터)</h3>
+          <p class="stop-block"><span class="k">한 일 —</span>아직 진짜 판매 시스템이 없어서, 원두·드립백·커피믹스 등 상품 8종의 정보를 미리 만들어뒀어요. 가격, 원산지, 후기 같은 정보도 함께요.</p>
+          <p class="stop-why"><span class="k">비유 —</span> 매장을 열기 전에 진짜 상품 대신 견본품이나 모형을 진열대에 먼저 놓아보는 것과 같아요.</p>
+          <div class="chips"><span class="chip">목업 데이터</span><span class="chip">TypeScript 타입</span></div>
+        </div>
+      </div>
+
+      <div class="stop" id="stop-5">
+        <div class="stamp">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8"></rect><rect x="13" y="3" width="8" height="8"></rect><rect x="3" y="13" width="8" height="8"></rect><rect x="13" y="13" width="8" height="8"></rect></svg>
+          <span class="num">5</span>
+        </div>
+        <div class="stop-card">
+          <h3 class="stop-title">진열대 만들기 (상품 목록 페이지)</h3>
+          <p class="stop-block"><span class="k">한 일 —</span>8개 상품을 카드 형태로 늘어놓는 화면을 만들었어요. 사진 자리, 이름, 가격, 할인율, 별점, BEST/NEW 표시, 품절 표시까지 한 화면에서 볼 수 있게 했어요.</p>
+          <p class="stop-why"><span class="k">비유 —</span> 매장에 들어갔을 때 가장 먼저 보이는 진열대를 꾸미는 작업과 같아요.</p>
+          <div class="chips"><span class="chip">화면 컴포넌트</span><span class="chip">반응형 그리드</span></div>
+        </div>
+      </div>
+
+      <div class="stop" id="stop-6">
+        <div class="stamp">
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"></rect><line x1="8" y1="9" x2="16" y2="9"></line><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="12" y2="17"></line></svg>
+          <span class="num">6</span>
+        </div>
+        <div class="stop-card">
+          <h3 class="stop-title">상세 설명 카드 만들기</h3>
+          <p class="stop-block"><span class="k">한 일 —</span>상품을 클릭하면 원산지, 무게, 유기농 인증 소개, 다른 사람들의 후기, "장바구니 담기" 버튼까지 볼 수 있는 화면을 만들었어요.</p>
+          <p class="stop-why"><span class="k">비유 —</span> 물건에 붙어 있는 설명서나 태그를 자세히 들여다보는 것과 같아요.</p>
+          <div class="chips"><span class="chip">상세 페이지</span><span class="chip">리뷰 목록</span></div>
+        </div>
+      </div>
+
+      <div class="stop" id="stop-7">
+        <div class="stamp">
+          <svg viewBox="0 0 24 24"><polyline points="3,4 5,4 8,15 18,15 20,7 6,7"></polyline><circle cx="9" cy="19" r="1.4"></circle><circle cx="17" cy="19" r="1.4"></circle></svg>
+          <span class="num">7</span>
+        </div>
+        <div class="stop-card">
+          <h3 class="stop-title">카트(장바구니) 만들기</h3>
+          <p class="stop-block"><span class="k">한 일 —</span>담은 상품의 수량을 바꾸거나 지울 수 있고, 상품 금액·배송비·총 결제금액까지 자동으로 계산해주는 화면을 만들었어요. 브라우저에 저장해서 새로고침해도 사라지지 않게 했어요.</p>
+          <p class="stop-why"><span class="k">비유 —</span> 마트에서 실제 카트를 밀고 다니면서 물건을 담고 빼고 하는 것과 똑같아요.</p>
+          <div class="chips"><span class="chip">장바구니 상태</span><span class="chip">localStorage</span></div>
+        </div>
+      </div>
+
+      <div class="stop" id="stop-8">
+        <div class="stamp">
+          <svg viewBox="0 0 24 24"><rect x="3" y="6" width="11" height="14" rx="1.5"></rect><rect x="15" y="3" width="6" height="9" rx="1"></rect></svg>
+          <span class="num">8</span>
+        </div>
+        <div class="stop-card">
+          <h3 class="stop-title">손님 눈높이 맞추기 (반응형 점검)</h3>
+          <p class="stop-block"><span class="k">한 일 —</span>휴대폰, 태블릿, 컴퓨터 화면 크기에서 다 확인해봤어요. 버튼이 손가락으로 누르기엔 너무 작았던 부분을 찾아서 크기를 키웠어요.</p>
+          <p class="stop-why"><span class="k">비유 —</span> 키가 다른 손님들이 와도 다 편하게 이용할 수 있도록 진열대 높이를 확인하는 것과 같아요.</p>
+          <div class="chips"><span class="chip">반응형 디자인</span><span class="chip">터치 영역</span></div>
+        </div>
+      </div>
+
+      <div class="stop" id="stop-9">
+        <div class="stamp">
+          <svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"></path><rect x="8" y="3" width="8" height="5"></rect><rect x="8" y="14" width="8" height="6"></rect></svg>
+          <span class="num">9</span>
+        </div>
+        <div class="stop-card">
+          <h3 class="stop-title">작업 기록 저장하기</h3>
+          <p class="stop-block"><span class="k">한 일 —</span>지금까지 만든 것을 Git이라는 도구로 스냅샷 찍듯이 저장(커밋)하고, GitHub이라는 온라인 저장소에 올렸어요(푸시).</p>
+          <p class="stop-why"><span class="k">비유 —</span> 게임할 때 저장 포인트를 만들어두는 것과 같아요. 나중에 문제가 생겨도 저장해둔 지점으로 되돌아갈 수 있어요.</p>
+          <div class="chips"><span class="chip">git commit</span><span class="chip">git push</span></div>
+        </div>
+      </div>
+
+      <div class="stop" id="stop-10">
+        <div class="stamp">
+          <svg viewBox="0 0 24 24"><line x1="5" y1="21" x2="5" y2="3"></line><path d="M5 4h13l-3 4 3 4H5"></path></svg>
+          <span class="num">10</span>
+        </div>
+        <div class="stop-card">
+          <h3 class="stop-title">진짜 가게 문 열기 (배포)</h3>
+          <p class="stop-block"><span class="k">한 일 —</span>"Vercel"이라는 서비스에 올려서, 인터넷 주소만 알면 누구나 들어올 수 있는 진짜 사이트로 만들었어요.</p>
+          <p class="stop-why"><span class="k">비유 —</span> 지금까지는 우리끼리만 볼 수 있는 모델하우스였다면, 이제 진짜 손님을 받는 가게 문을 연 거예요.</p>
+          <div class="chips"><span class="chip">Vercel</span><span class="chip">배포</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="destination">
+      <svg viewBox="0 0 24 24"><line x1="5" y1="21" x2="5" y2="3"></line><path d="M5 4h13l-3 4 3 4H5"></path></svg>
+      <h2>여정의 끝, 지금 여기서 확인할 수 있어요</h2>
+      <p>10개의 정거장을 거쳐 만들어진 쇼핑몰이 실제로 인터넷에 열려 있어요. 코드는 GitHub에, 실제 사이트는 아래 주소에 있어요.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://laos-coffee.vercel.app" target="_blank" rel="noopener noreferrer">쇼핑몰 열어보기 ↗</a>
+        <a class="btn btn-secondary" href="https://github.com/JEON-DAEJIN/Laos-Coffee" target="_blank" rel="noopener noreferrer">만든 과정 코드 보기 ↗</a>
+      </div>
+    </div>
+
+    <div class="next-up">
+      <div class="next-up-label">다음 정거장 (예정)</div>
+      <div class="next-chip-row">
+        <span class="next-chip">회원가입 · 로그인</span>
+        <span class="next-chip">주문 · 결제</span>
+        <span class="next-chip">리뷰 · 찜하기</span>
+        <span class="next-chip">관리자 페이지</span>
+        <span class="next-chip">AI 추천</span>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
