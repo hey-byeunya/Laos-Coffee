@@ -1,13 +1,5 @@
-const GRADIENTS = [
-  "from-amber-800 to-amber-950",
-  "from-stone-700 to-stone-950",
-  "from-orange-800 to-stone-900",
-  "from-teal-700 to-stone-900",
-];
-
-function pickGradient(seed: number) {
-  return GRADIENTS[seed % GRADIENTS.length];
-}
+import { getProductArt } from "@/data/product-art";
+import { ProductIllustration } from "./ProductIllustration";
 
 interface ProductImagePlaceholderProps {
   seed: number;
@@ -16,25 +8,23 @@ interface ProductImagePlaceholderProps {
 }
 
 /**
- * 실제 상품 사진 에셋이 준비되기 전까지 사용하는 임시 이미지.
- * PRD의 mock 데이터 image 필드(이미지 설명 텍스트)를 그대로 노출한다.
+ * 실제 상품 사진 촬영 전까지 사용하는 일러스트 이미지.
+ * 상품 설명(원산지·풍경 모티프)에 맞춰 procedural하게 그린 SVG를 보여준다.
  */
 export function ProductImagePlaceholder({
   seed,
   description,
   className = "",
 }: ProductImagePlaceholderProps) {
+  const art = getProductArt(seed);
+
   return (
     <div
-      className={`flex items-center justify-center bg-gradient-to-br ${pickGradient(
-        seed
-      )} p-4 text-center ${className}`}
+      className={`overflow-hidden ${className}`}
       role="img"
       aria-label={description}
     >
-      <span className="text-xs leading-snug text-amber-100/80">
-        {description}
-      </span>
+      <ProductIllustration art={art} gradId={`sky-${seed}`} />
     </div>
   );
 }
